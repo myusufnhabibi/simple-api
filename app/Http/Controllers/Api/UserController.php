@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Exception;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -40,7 +39,7 @@ class UserController extends Controller
         $imageName = null;
 
         if ($request->image) {
-            $imageName = time(). '.' . $request->file('image')->extension();
+            $imageName = time() . '.' . $request->file('image')->extension();
             $request->image->storeAs('public/images', $imageName);
         }
 
@@ -53,7 +52,7 @@ class UserController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'result'=> $user
+            'result' => $user
         ]);
     }
 
@@ -73,17 +72,16 @@ class UserController extends Controller
         $decrypt = Crypt::decryptString($id);
         $request->validate([
             'name' => 'required',
-            'email' => 'required|unique:users,email,' . $decrypt,
-            'password' => 'required',
+            'email' => 'required|unique:users,email,' . $decrypt
         ]);
 
         try {
             $user = User::findOrFail($decrypt);
             if ($request->image) {
-                $imageName = time(). '.' . $request->file('image')->extension();
+                $imageName = time() . '.' . $request->file('image')->extension();
                 $request->image->storeAs('public/images', $imageName);
 
-                $path = storage_path('app/public/images/'. $user->image);
+                $path = storage_path('app/public/images/' . $user->image);
                 if (File::exists($path)) {
                     File::delete($path);
                 }
@@ -102,8 +100,8 @@ class UserController extends Controller
             return response()->json(['status' => 'success', 'result' => $user]);
         } catch (DecryptException $e) {
             return response()->json([
-                'status'    => 'error',
-                'result'    => $e,
+                'status' => 'error',
+                'result' => $e,
             ]);
         }
     }
@@ -113,20 +111,19 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        try{
+        try {
             $decryptId = Crypt::decryptString($id);
             $user = User::findOrFail($decryptId);
             $user->delete();
 
             return response()->json([
-                'status'    => 'success',
-                'result'    => 'Data berhasil dihapus',
+                'status' => 'success',
+                'result' => 'Data berhasil dihapus',
             ]);
-        }
-        catch(Exception $e){
+        } catch (DecryptException $e) {
             return response()->json([
-                'status'    => 'error',
-                'result'    => $e,
+                'status' => 'error',
+                'result' => $e,
             ]);
         }
     }
