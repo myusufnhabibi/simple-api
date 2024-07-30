@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
@@ -31,12 +32,12 @@ class AuthController extends Controller
             $data = [
                 'access_token' => $tokenResult,
                 'token_type' => 'Bearer',
-                'user' => $user
+                'user' => new UserResource($user)
             ];
 
-            return response()->json(['status' => 'success', 'result' => $data]);
-        } catch (DecryptException $error) {
-            return response()->json(['status' => 'error']);
+            return $this->sendResponse($data, 'Register Berhasil');
+        } catch (DecryptException $e) {
+            return $this->sendError('Registrasi Gagal!', $e->getMessage());
         }
     }
 
@@ -50,7 +51,7 @@ class AuthController extends Controller
 
             $credentials = request(['email', 'password']);
             if (!Auth::attempt($credentials)) {
-                return response()->json(['message' => 'Unauthorized']);
+                return $this->sendError('Unauthorized', 'Authentication Failed', 500);
             }
 
             //Jika hash tidak sesuai
@@ -65,13 +66,13 @@ class AuthController extends Controller
             $data = [
                 'access_token' => $tokenResult,
                 'token_type' => 'Bearer',
-                'user' => $user
+                'user' => new UserResource($user)
             ];
 
-            return response()->json(['status' => 'success', 'result' => $data]);
+            return $this->sendResponse($data, 'Login Berhasil');
 
-        } catch (\Exception $error) {
-            return response()->json(['status' => 'error']);
+        } catch (\Exception $e) {
+            return $this->sendError('Login Gagal!', $e->getMessage());
         }
     }
 

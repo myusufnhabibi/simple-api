@@ -21,10 +21,7 @@ class UserController extends Controller
         $user = User::orderBy('id', 'DESC')->paginate(5);
         $data = UserResource::collection($user);
 
-        return response()->json([
-            'status' => 'success',
-            'results' => $data
-        ]);
+        return $this->sendResponse($data, 'Tampil Semua User');
     }
 
     /**
@@ -52,10 +49,7 @@ class UserController extends Controller
             'image' => $request->image
         ]);
 
-        return response()->json([
-            'status' => 'success',
-            'result' => new UserResource($user)
-        ]);
+        return $this->sendResponse(new UserResource($user), 'Data Berhasil Ditambahkan');
     }
 
     /**
@@ -66,7 +60,7 @@ class UserController extends Controller
         $decrypt = Crypt::decryptString($id);
         $user = User::findOrFail($decrypt);
 
-        return response()->json(['status' => 'success', 'result' => new UserResource($user)]);
+        return $this->sendResponse(new UserResource($user), 'Tampil 1 User');
     }
 
     /**
@@ -102,12 +96,9 @@ class UserController extends Controller
 
             $user->update();
 
-            return response()->json(['status' => 'success', 'result' => new UserResource($user)]);
+            return $this->sendResponse(new UserResource($user), 'Data Berhasil Diupdate');
         } catch (DecryptException $e) {
-            return response()->json([
-                'status' => 'error',
-                'result' => $e,
-            ]);
+            return $this->sendError('Data Gagal Diupdate', $e->getMessage());
         }
     }
 
@@ -121,15 +112,9 @@ class UserController extends Controller
             $user = User::findOrFail($decryptId);
             $user->delete();
 
-            return response()->json([
-                'status' => 'success',
-                'result' => 'Data berhasil dihapus',
-            ]);
+            return $this->sendResponse(new UserResource($user), 'Data Berhasil Dihapus');
         } catch (DecryptException $e) {
-            return response()->json([
-                'status' => 'error',
-                'result' => $e,
-            ]);
+            return $this->sendError('Data Gagal Dihapus', $e->getMessage());
         }
     }
 }
