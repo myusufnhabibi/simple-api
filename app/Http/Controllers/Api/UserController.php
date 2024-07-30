@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
@@ -17,7 +18,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        $data = User::orderBy('id', 'DESC')->paginate(5);
+        $user = User::orderBy('id', 'DESC')->paginate(5);
+        $data = UserResource::collection($user);
 
         return response()->json([
             'status' => 'success',
@@ -52,7 +54,7 @@ class UserController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'result' => $user
+            'result' => new UserResource($user)
         ]);
     }
 
@@ -61,7 +63,10 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $decrypt = Crypt::decryptString($id);
+        $user = User::findOrFail($decrypt);
+
+        return response()->json(['status' => 'success', 'result' => new UserResource($user)]);
     }
 
     /**
@@ -97,7 +102,7 @@ class UserController extends Controller
 
             $user->update();
 
-            return response()->json(['status' => 'success', 'result' => $user]);
+            return response()->json(['status' => 'success', 'result' => new UserResource($user)]);
         } catch (DecryptException $e) {
             return response()->json([
                 'status' => 'error',
